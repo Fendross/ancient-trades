@@ -161,20 +161,23 @@ class Civilization(object):
                + '\nValue of treasury: ' + str(self.get_treasury()) + '\nResources: ' + str(self.get_stock())
 
 
-def test_civilization_class(name):
+def test_civilization(name):
+    '''
+    @notice: simulates the creation of a Civilization instance and checking every method works
+    '''
     c = Civilization(name)
     for i in range(5):
         c.found_city(generate_random_city_name(), 'e')
         c.found_city(generate_random_city_name(), 'i')
-    print("Status of the civilization " + name + " after initialisation:\n" + str(c))
+    print("Status of the civilization " + name + " before production:\n" + str(c))
     print()
     c.make()
-    print("Status of the civilization " + name + " after producing:\n" + str(c))
+    print("Status of the civilization " + name + " after production:\n" + str(c))
 
 
 if __name__ == '__main__':
     print("---------------------------------")
 
     # Civilization test
-    test_civilization_class('Romans')
+    test_civilization('Romans')
     print("---------------------------------")
