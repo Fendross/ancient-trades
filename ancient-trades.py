@@ -1,6 +1,5 @@
 '''
-ANCIENT TRADES, an exam example/problem set from Programming II (specifications are written in Java).
-Reference File: ./exam-example.pdf
+ANCIENT TRADES, a practice problem set for the OOP paradigm.
 Goal: to practice classes and python basics.
 '''
 import random
