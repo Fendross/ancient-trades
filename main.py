@@ -7,6 +7,36 @@ import random
 
 RESOURCE_NAMES = ['Petrol', 'Gold', 'Silver', 'Bronze', 'Weapons', 'Canned Food', 'Milk', 'Corn', 'Uranium']
 CITY_NAMES = ['Pretoria', 'Agrigento', 'Roma', 'Cartagine', 'Milano', 'Venezia', 'Napoli', 'Genova', 'Livorno', 'Termoli']
+CIVILIZATION_NAMES = [
+    "Sumer",
+    "Akkad",
+    "Egypt",
+    "Indus Valley",
+    "Chinese",
+    "Greek",
+    "Roman",
+    "Mayan",
+    "Inca",
+    "Aztec",
+    "Persian Empire",
+    "Gupta Empire",
+    "Maurya Empire",
+    "Han Empire",
+    "Roman Empire",
+    "Byzantine Empire",
+    "Holy Roman Empire",
+    "Islamic Caliphate",
+    "Mongol Empire",
+    "Inca Empire",
+    "Aztec Empire",
+    "British Empire",
+    "French Empire",
+    "Spanish Empire",
+    "Russian Empire",
+    "United States",
+    "Japanese"
+]
+
 
 def generate_random_resource():
     '''
@@ -14,8 +44,7 @@ def generate_random_resource():
     @return: Resource with random arguments
     '''
     name = random.choice(RESOURCE_NAMES)
-    del(RESOURCE_NAMES[RESOURCE_NAMES.index(name)])
-    return Resource(name, random.randint(10, 101))
+    return Resource(name, random.randint(10, 20))
 
 def generate_random_city_name():
     '''
@@ -23,7 +52,10 @@ def generate_random_city_name():
     @return: string name, random name
     '''
     name = random.choice(CITY_NAMES)
-    del(CITY_NAMES[CITY_NAMES.index(name)])
+    return name
+
+def generate_random_civilization_name():
+    name = random.choice(CIVILIZATION_NAMES)
     return name
 
 # Resource Class
@@ -84,10 +116,10 @@ class IndustrialCity(City):
         c.add_resource(self.resource)
 
     def __repr__(self):
-        return 'Industrial City of ' + self.get_name() + ' that produces ' + str(self.get_resource())
+        return 'Industrial City of ' + self.get_name() + ' which produces ' + str(self.get_resource())
 
     def __str__(self):
-        return 'Industrial City of ' + self.get_name() + ' that produces ' + str(self.get_resource())
+        return 'Industrial City of ' + self.get_name() + ' which produces ' + str(self.get_resource())
 
 
 class EconomyCity(City):
@@ -148,36 +180,90 @@ class Civilization(object):
     def make(self):
         for city in self.cities:
             city.produce(self)
+        
+    def has(self, r):
+        if r in self.get_stock():
+            return True
+        return False
+
+    def has_double(self, r):
+        if self.get_stock().count(r) > 1:
+            return True
+        return False
 
     def sell_resource_to(self, other):
         '''
         @param other: Civilization
         @return: bool, True if the exchange happened or False otherwise
         '''
-        pass
+        new_stock = []
+        has_traded = False
+        for resource in self.get_stock():
+            if self.has_double(resource) and not other.has(resource):
+                if other.get_treasury() >= resource.get_price():
+                    other.add_resource(resource)
+                    other.treasury -= resource.get_price()
+                    self.treasury += resource.get_price()
+                    has_traded = True
+                else:
+                    raise ValueError("Buyer treasury has not enough funds")
+            else:
+                new_stock.append(resource)
+        self.stock = new_stock
+        return has_traded
+
+    def __repr__(self):
+        return self.get_name() + ' civilization:\nCities: ' + str(self.get_cities()) \
+               + '\nValue of treasury: ' + str(self.get_treasury()) + '\nResources: ' + str(self.get_stock())
 
     def __str__(self):
         return self.get_name() + ' civilization:\nCities: ' + str(self.get_cities()) \
                + '\nValue of treasury: ' + str(self.get_treasury()) + '\nResources: ' + str(self.get_stock())
 
 
-def test_civilization(name):
+class History(object):
+    def __init__(self, civilizations):
+        '''
+        @param civilizations: list of Civilization
+        '''
+        self.civilizations = civilizations
+
+
+def test_civilization_trades(name_1, name_2):
     '''
-    @notice: simulates the creation of a Civilization instance and checking every method works
+    @notice: tests the sell_resource_to method of the Civilization class
     '''
-    c = Civilization(name)
+    c1 = Civilization(name_1)
+    c2 = Civilization(name_2)
     for i in range(5):
-        c.found_city(generate_random_city_name(), 'e')
-        c.found_city(generate_random_city_name(), 'i')
-    print("Status of the civilization " + name + " before production:\n" + str(c))
-    print()
-    c.make()
-    print("Status of the civilization " + name + " after production:\n" + str(c))
+        c1.found_city(generate_random_city_name(), 'e')
+        c1.found_city(generate_random_city_name(), 'i')
+        c1.add_resource(generate_random_resource())
+        c2.found_city(generate_random_city_name(), 'e')
+        c2.found_city(generate_random_city_name(), 'i')
+        c2.add_resource(generate_random_resource())
+    c2.make()
+    print("Let's see if a trade can happen here...")
+    print(c1)
+    print("---------------------------------")
+    print(c2)
+    has_traded = c1.sell_resource_to(c2)
+    print("---------------------------------")
+    if has_traded:
+        print("The trade has happened! Let's check the balances of the two Civilizations:")
+        print(c1)
+        print("---------------------------------")
+        print(c2)    
+    else:
+        print("The trade didn't happen.")
 
 
 if __name__ == '__main__':
     print("---------------------------------")
 
     # Civilization test
-    test_civilization('Romans')
+    # test_civilization('Romans')
+
+    # Trading method test
+    test_civilization_trades(generate_random_civilization_name(), generate_random_civilization_name())
     print("---------------------------------")
