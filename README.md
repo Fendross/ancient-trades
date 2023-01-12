@@ -17,7 +17,7 @@ git clone https://github.com/Fendross/ancient-trades .
 pip3 install -r requirements.txt
 ```
 
-To execute the main game, run (_not yet implemented_):
+To execute **the first part of** (second one soon) the main game, run:
 
 ```zsh
 python3 ancient_trades.py

@@ -23,8 +23,8 @@ def generate_random_city_name():
      
 def generate_random_civilization(num_foundings=1):
     '''
-    @return type=Civilization A Civilization with random name, random cities (one of each subclass)
     @param num_foundings type=int Number of city foundings. If None, have at least one founding
+    @return type=Civilization A Civilization with random name, random cities (one of each subclass)
     '''
     c = Civilization(random.choice(CIVILIZATION_NAMES))
     for i in range(num_foundings):
@@ -142,12 +142,12 @@ class Civilization(object):
     def get_stock(self):
         return self.stock
 
-    def found_city(self, name, city_type):
+    def found_city(self, city_name, city_type):
         if city_type.lower() == 'i':
             resource = generate_random_resource()
-            self.cities.append(IndustrialCity(name, resource))
+            self.cities.append(IndustrialCity(city_name, resource))
         elif city_type.lower() == 'e':
-            self.cities.append(EconomyCity(name))
+            self.cities.append(EconomyCity(city_name))
 
     def add_resource(self, resource):
         self.stock.append(resource)
@@ -184,7 +184,7 @@ class Civilization(object):
                     self.treasury += resource.get_price()
                     has_traded = True
                 else:
-                    print(other.get_name() + 'has not enough funds to close the trade.')
+                    print(other.get_name() + ' has not enough funds to close the trade.')
                     new_stock.append(resource)
             else:
                 new_stock.append(resource)
@@ -210,27 +210,73 @@ class History(object):
     def get_civilizations(self):
         return self.civilizations
 
-    def trade(self, iterations):
+    def commerce(self, iterations):
         '''
-        TODO document this function
+        @notice Takes the Civilization of the History instance and for each iteration:
+                - calls the make() method on each of them
+                - for each Civilization, checks if it can trade with the others, and it can do it only once per iteration
+                - if the current Civilization has more money than the one saved in the richest variable, it becomes the richest
+        @param iterations type=int the number of loop iterations
+        @return richest type=Civilization The richest Civilization
         '''
         richest = self.civilizations[0]
         for n in range(iterations):
+            if len(self.civilizations) <= 1:
+                print("One or less civilization in the history, thus commerce cannot be initiated. Add more the next time!")
+                return
             for c in self.civilizations:
                 c.make()
             for c in self.civilizations:
                 for k in self.civilizations:
                     has_traded = c.sell_resource_to(k)
                     if has_traded:
-                        print(c.get_name() + 'has traded with ' + k.get_name())
+                        print(c.get_name() + ' has traded with ' + k.get_name())
                         break
                 if c.get_treasury() > richest.get_treasury():
                     richest = c
+            print("---------------------------------")
         return richest
 
     # TODO: write the simulation of the entire program
     def play_simulation(self):
-        pass
+        '''
+        @notice Runs the Civilization Builder CLI, which creates a Civilization and can add to it as many cities as the user wishes.
+        '''
+        # Civilization Builder
+        while True:
+            civ_name = input("Enter the name of the new Civilization (blank if you want to stop): ")
+            if civ_name == '':
+                break
+            else:
+                cities_index = 0
+                c = Civilization(civ_name)
+                while True:
+                    city_name = input("Enter the name of a new city, or type 'stop' to move forward: ")
+                    city_type = ''
+                    if city_name.lower() == 'stop':
+                        break
+                    else:
+                        city_char = input("Of which type? 'i' for Industrial, 'e' cor Economy: ")
+                        if city_char == 'i':
+                            city_type += 'Industrial'
+                        elif city_char == 'e':
+                            city_type += 'Economy'
+                        else:
+                            raise ValueError("City type not recognized")
+                    c.found_city(city_name, city_char)
+                    if city_char == 'i':
+                        r = c.get_cities()[cities_index].get_resource()
+                        print(c.get_name() + " founded " + city_name + ", a city of type " + city_type + ", which produces the resource " + r.get_name() + " (price " + str(r.get_price()) + ").")
+                    elif city_char == 'e':
+                        print(c.get_name() + " founded " + city_name + ", a city of type " + city_type + ".")
+                    cities_index += 1
+            c.add_money(10000)
+            self.civilizations.append(c)
+
+        # Then, ask for how many iterations does the user want to make civilizations trade with each other
+        n = int(input("Enter a number of iterations for the commerce: "))
+        print("History of the commerce:\n")
+        return self.commerce(n)
 
     def __str__(self):
         result = ''
@@ -241,4 +287,5 @@ class History(object):
 
 # MAIN PROGRAM
 if __name__ == '__main__':
-    print("Main loop not yet implemented!")
+    h = History([])
+    h.play_simulation()

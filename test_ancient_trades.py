@@ -36,9 +36,9 @@ def test_history_trade(num_civilizations, num_foundings, iterations):
 
     print("Here's the list of civilizations in this simulation:\n" + str(h))
     print("---------------------------------")
-    
+
     print("During the trading period...")
-    richest = h.trade(iterations)
+    richest = h.commerce(iterations)
     print("---------------------------------")
     print("List of civilization's treasuries:")
     for c in h.get_civilizations():
@@ -46,16 +46,18 @@ def test_history_trade(num_civilizations, num_foundings, iterations):
     print("---------------------------------")
     return 'The richest civilization of the simulation is:\n' + str(richest)
 
-# Testing variables
-num_civilizations = 5
-num_foundings = 2
-iterations = 3
 
-# Civilization class testing
-print("TESTING test_civilization_trades...\n")
-test_civilization_trades(num_foundings)
-print("---------------------------------")
+if __name__ == '__main__':
+    # Testing variables
+    num_civilizations = 5
+    num_foundings = 2
+    iterations = 3
 
-# History class testing 
-print("TESTING test_history_trade...\n")
-print(test_history_trade(num_civilizations, num_foundings, iterations))
+    # Civilization class testing
+    print("TESTING test_civilization_trades...\n")
+    test_civilization_trades(num_foundings)
+    print("---------------------------------")
+
+    # History class testing 
+    print("TESTING test_history_trade...\n")
+    print(test_history_trade(num_civilizations, num_foundings, iterations))
