@@ -36,15 +36,24 @@ def generate_random_civilization(num_foundings=1):
 
 # Resource Class
 class Resource(object):
+    created_resources = []
+
     def __init__(self, name, price):
         self.name = name
         self.price = price
+        Resource.created_resources.append(self)
 
     def get_name(self):
         return self.name
 
     def get_price(self):
         return self.price
+
+    def get_random_resource(self):
+        if self.created_resources == []:
+            raise ValueError("Cannot get a random resource from an empty list")
+        else:
+            return random.choice(self.created_resources)
 
     def greater_than(self, other):
         '''
@@ -144,7 +153,7 @@ class Civilization(object):
 
     def found_city(self, city_name, city_type):
         if city_type.lower() == 'i':
-            resource = generate_random_resource()
+            resource = random.choice(Resource.created_resources)
             self.cities.append(IndustrialCity(city_name, resource))
         elif city_type.lower() == 'e':
             self.cities.append(EconomyCity(city_name))
@@ -251,7 +260,14 @@ class History(object):
                 cities_index = 0
                 c = Civilization(civ_name)
                 while True:
-                    city_name = input("Enter the name of a new city, or type 'stop' to move forward: ")
+                    resource_name = input("Enter the name of a new Resource, or type 'stop' to move forward: ")
+                    if resource_name.lower() == 'stop':
+                        break
+                    else:
+                        resource_price = int(input("What is its price?: "))
+                        c.add_resource(Resource(resource_name, resource_price))
+                while True:
+                    city_name = input("Enter the name of a new City, or type 'stop' to move forward: ")
                     city_type = ''
                     if city_name.lower() == 'stop':
                         break
