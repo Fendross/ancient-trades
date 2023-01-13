@@ -49,11 +49,11 @@ class Resource(object):
     def get_price(self):
         return self.price
 
-    def get_random_resource(self):
-        if self.created_resources == []:
+    def get_random_created_resource():
+        if Resource.created_resources == []:
             raise ValueError("Cannot get a random resource from an empty list")
         else:
-            return random.choice(self.created_resources)
+            return random.choice(Resource.created_resources)
 
     def greater_than(self, other):
         '''
@@ -77,6 +77,25 @@ class Resource(object):
         return True
 
 
+# Resource Subclass
+class DerivedResource(Resource):
+    def __init__(self, name, price, original):
+        '''
+        @param original type=Resource The original Resource that this instance is derived from
+        '''
+        super().__init__(name, price)
+        self.original = original
+
+    def get_original(self):
+        return self.original
+
+    def __repr__(self):
+        return self.get_name() + " price " + str(self.get_price()) + " derived from " + str(self.get_original())
+
+    def __str__(self):
+        return self.get_name() + " price " + str(self.get_price()) + " derived from " + str(self.get_original())
+
+
 # Abstract Base Class City
 class City(object):
     def __init__(self, name):
@@ -86,7 +105,7 @@ class City(object):
         pass
 
 
-# City SUBCLASSES
+# City Subclasses
 class IndustrialCity(City):
     def __init__(self, name, resource):
         super().__init__(name)
@@ -99,6 +118,9 @@ class IndustrialCity(City):
         return self.resource
 
     def produce(self, c):
+        if type(self.resource) == DerivedResource:
+            if not self.resource.get_original() in c.get_stock():
+                raise Exception("Original resource not in the Civilization stock")
         c.add_resource(self.resource)
 
     def __repr__(self):
@@ -153,7 +175,7 @@ class Civilization(object):
 
     def found_city(self, city_name, city_type):
         if city_type.lower() == 'i':
-            resource = random.choice(Resource.created_resources)
+            resource = Resource.get_random_created_resource()
             self.cities.append(IndustrialCity(city_name, resource))
         elif city_type.lower() == 'e':
             self.cities.append(EconomyCity(city_name))
@@ -166,7 +188,11 @@ class Civilization(object):
 
     def make(self):
         for city in self.cities:
-            city.produce(self)
+            # If city is trying to produce a DerivedResource without having the original in the stock, catch the exception and print an error message
+            try:
+                city.produce(self)
+            except Exception:
+                print("City " + city.get_name() + " is trying to produce " + str(city.get_resource()) + ", a derived resource without having the original one.")
         
     def has(self, r):
         if r in self.get_stock():
@@ -210,7 +236,7 @@ class Civilization(object):
 
 
 class History(object):
-    def __init__(self, civilizations):
+    def __init__(self, civilizations=[]):
         '''
         @param civilizations type=list List of Civilization
         '''
@@ -230,6 +256,7 @@ class History(object):
         '''
         richest = self.civilizations[0]
         for n in range(iterations):
+            print("Trade cicle #" + str(n) + " ongoing...")
             if len(self.civilizations) <= 1:
                 print("One or less civilization in the history, thus commerce cannot be initiated. Add more the next time!")
                 return
@@ -246,33 +273,46 @@ class History(object):
             print("---------------------------------")
         return richest
 
-    # TODO: write the simulation of the entire program
     def play_simulation(self):
         '''
         @notice Runs the Civilization Builder CLI, which creates a Civilization and can add to it as many cities as the user wishes.
         '''
+        # Starting treasury of each civilization
+        initial_balance = 10000
+
+        print("*** ANCIENT TRADES ***\nWhich civilization will be the richest?\n")
+        print("---------------------------------\n")
+        # Resource Creation Loop
+        while True:
+            resource_name = input("Enter the name of a new Resource, or type 'stop' to move forward:\n")
+            if resource_name.lower() == 'stop':
+                break
+            else:
+                resource_price = int(input("What is its price?: "))
+                r = Resource(resource_name, resource_price)
+                Resource.created_resources.append(r)
+                response = input("Do you wish to also create a Derived Resource from " + resource_name + "? [y/n]\n")
+                if response.lower() == 'y':
+                    derived_name = input("Which name?\n")
+                    derived_price = int(input("Which price?\n"))
+                    Resource.created_resources.append(DerivedResource(derived_name, derived_price, r))
+        
         # Civilization Builder
         while True:
-            civ_name = input("Enter the name of the new Civilization (blank if you want to stop): ")
-            if civ_name == '':
+            civilization_name = input("Enter the name of the new Civilization (blank if you want to stop):\n")
+            if civilization_name == '':
                 break
             else:
                 cities_index = 0
-                c = Civilization(civ_name)
+                c = Civilization(civilization_name)
+                # City Creation Loop
                 while True:
-                    resource_name = input("Enter the name of a new Resource, or type 'stop' to move forward: ")
-                    if resource_name.lower() == 'stop':
-                        break
-                    else:
-                        resource_price = int(input("What is its price?: "))
-                        c.add_resource(Resource(resource_name, resource_price))
-                while True:
-                    city_name = input("Enter the name of a new City, or type 'stop' to move forward: ")
+                    city_name = input("Enter the name of a new City, or type 'stop' to move forward:\n")
                     city_type = ''
                     if city_name.lower() == 'stop':
                         break
                     else:
-                        city_char = input("Of which type? 'i' for Industrial, 'e' cor Economy: ")
+                        city_char = input("Of which type? 'i' for Industrial, 'e' cor Economy:\n")
                         if city_char == 'i':
                             city_type += 'Industrial'
                         elif city_char == 'e':
@@ -286,13 +326,14 @@ class History(object):
                     elif city_char == 'e':
                         print(c.get_name() + " founded " + city_name + ", a city of type " + city_type + ".")
                     cities_index += 1
-            c.add_money(10000)
+            c.add_money(initial_balance)
             self.civilizations.append(c)
 
         # Then, ask for how many iterations does the user want to make civilizations trade with each other
-        n = int(input("Enter a number of iterations for the commerce: "))
-        print("History of the commerce:\n")
-        return self.commerce(n)
+        n = int(input("Enter a number of iterations for the commerce:\n"))
+        print("\nHistory of the commerce:\n")
+        richest = self.commerce(n)
+        print("The richest civilization of them all is...***" + richest.get_name() + "***\n")
 
     def __str__(self):
         result = ''
@@ -303,5 +344,6 @@ class History(object):
 
 # MAIN PROGRAM
 if __name__ == '__main__':
-    h = History([])
+    # TODO list of inputs?
+    h = History()
     h.play_simulation()

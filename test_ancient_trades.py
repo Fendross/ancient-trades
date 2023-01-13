@@ -4,6 +4,14 @@
 
 from ancient_trades import *
 
+def build_resource_stock(num_resources):
+    n = 0
+    while n < num_resources:
+        generate_random_resource()
+        n += 1
+    print("Generated " + str(n) + " random resources!")
+
+
 def test_civilization_trades(num_foundings):
     '''
     @notice Tests the Civilization.sell_resource_to(self, other) method
@@ -41,7 +49,7 @@ def test_history_trade(num_civilizations, num_foundings, iterations):
     print("Here's the list of civilizations in this simulation:\n" + str(h))
     print("---------------------------------")
 
-    print("During the trading period...")
+    print("Trading simulation started...\n")
     richest = h.commerce(iterations)
     print("---------------------------------")
     print("List of civilization's treasuries:")
@@ -52,10 +60,16 @@ def test_history_trade(num_civilizations, num_foundings, iterations):
 
 
 if __name__ == '__main__':
+    print("!!! TESTING SUITE FOR THE ANCIENT TRADES SIMULATION !!!\n")
     # Testing variables
     num_civilizations = 5
     num_foundings = 2
     iterations = 3
+    num_resources = 10
+
+    # Initialise the resources stock to pick from
+    build_resource_stock(num_resources)
+    print("---------------------------------")
 
     # Civilization class testing
     print("TESTING test_civilization_trades...\n")
