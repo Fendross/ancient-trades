@@ -1,3 +1,7 @@
+'''
+@notice History was not test-driven implemented
+'''
+
 from ancient_trades import *
 
 def test_civilization_trades(num_foundings):
