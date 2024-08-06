@@ -3,6 +3,7 @@
 '''
 
 from ancient_trades import *
+from utils import *
 
 def build_resource_stock(num_resources):
     n = 0
